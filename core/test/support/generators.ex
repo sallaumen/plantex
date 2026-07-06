@@ -8,10 +8,10 @@ defmodule Core.Generators do
 
   def reading do
     gen all(
-          sensor_id <- string(:alphanumeric, min_length: 1),
+          sensor_id <- string(:printable),
           kind <- member_of([:air_temp, :air_humidity, :soil_moisture]),
           value <- one_of([integer(), float()]),
-          unit <- one_of([constant(nil), string(:alphanumeric, min_length: 1)]),
+          unit <- one_of([constant(nil), string(:printable)]),
           measured_at <- integer(0..4_000_000_000_000)
         ) do
       %Reading{
@@ -26,10 +26,14 @@ defmodule Core.Generators do
 
   def command do
     gen all(
-          id <- string(:alphanumeric, min_length: 1),
-          actuator_id <- string(:alphanumeric, min_length: 1),
+          id <- string(:printable),
+          actuator_id <- string(:printable),
           action <- member_of([:on, :off, :pulse]),
-          params <- map_of(string(:alphanumeric, min_length: 1), integer()),
+          params <-
+            map_of(
+              string(:alphanumeric, min_length: 1),
+              one_of([integer(), float(), boolean(), string(:alphanumeric)])
+            ),
           issued_at <- integer(0..4_000_000_000_000)
         ) do
       %Command{
@@ -44,12 +48,12 @@ defmodule Core.Generators do
 
   def photo do
     gen all(
-          station_id <- string(:alphanumeric, min_length: 1),
+          station_id <- string(:printable),
           captured_at <- integer(0..4_000_000_000_000),
           content_type <- member_of(["image/jpeg", "image/png"]),
-          width <- integer(1..10_000),
-          height <- integer(1..10_000),
-          byte_size <- integer(0..50_000_000)
+          width <- one_of([constant(nil), integer(1..10_000)]),
+          height <- one_of([constant(nil), integer(1..10_000)]),
+          byte_size <- one_of([constant(nil), integer(0..50_000_000)])
         ) do
       %Photo{
         station_id: station_id,
