@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: plantex_dev
+    # Host port 5435 (5432 = vic-api, 5433 = forrozin_page, 5434 = beatgrid
+    # already in use on this machine).
+    ports:
+      - "5435:5432"
+    volumes:
+      - plantex_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  plantex_pg:
