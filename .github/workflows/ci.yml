@@ -56,6 +56,9 @@ jobs:
         with:
           elixir-version: ${{ env.ELIXIR_VERSION }}
           otp-version: ${{ env.OTP_VERSION }}
+      # Nerves declara `archives: [nerves_bootstrap: ...]` no mix.exs, então o
+      # mix exige o archive para rodar qualquer task (o setup-beam não o instala).
+      - run: mix archive.install hex nerves_bootstrap --force
       - run: mix deps.get
         working-directory: firmware
       - run: mix check
