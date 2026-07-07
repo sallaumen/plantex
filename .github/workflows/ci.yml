@@ -52,6 +52,9 @@ jobs:
       MIX_TARGET: host
     steps:
       - uses: actions/checkout@v4
+      # vintage_net (dep do Nerves) compila um NIF em C que precisa dos headers
+      # do libmnl mesmo no target host — o runner Ubuntu não os traz por padrão.
+      - run: sudo apt-get update && sudo apt-get install -y libmnl-dev
       - uses: erlef/setup-beam@v1
         with:
           elixir-version: ${{ env.ELIXIR_VERSION }}
