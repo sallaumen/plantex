@@ -374,6 +374,7 @@ Create `core/test/support/generators.ex`:
 defmodule Core.Generators do
   @moduledoc "Geradores StreamData para os contratos do Core."
   import StreamData
+  import ExUnitProperties
   alias Core.Control.Command
   alias Core.Photo
   alias Core.Telemetry.Reading

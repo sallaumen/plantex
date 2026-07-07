@@ -10,6 +10,10 @@ erl_crash.dump
 /config/*.secret.exs
 .elixir_ls/
 
+# Dialyzer PLTs
+/core/priv/plts/*.plt
+/core/priv/plts/*.plt.hash
+
 # Nerves firmware
 *.fw
 *.img

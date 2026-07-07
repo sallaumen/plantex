@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+env:
+  MIX_ENV: test
+  ELIXIR_VERSION: "1.19.5-otp-27"
+  OTP_VERSION: "27.3.4.11"
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{ env.ELIXIR_VERSION }}
+          otp-version: ${{ env.OTP_VERSION }}
+      - run: mix deps.get
+        working-directory: core
+      - run: mix check
+        working-directory: core
+
+  server:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5435:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 10s
+          --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{ env.ELIXIR_VERSION }}
+          otp-version: ${{ env.OTP_VERSION }}
+      - run: mix deps.get
+        working-directory: server
+      - run: mix check
+        working-directory: server
+
+  firmware:
+    runs-on: ubuntu-latest
+    env:
+      MIX_TARGET: host
+    steps:
+      - uses: actions/checkout@v4
+      # vintage_net (dep do Nerves) compila um NIF em C que precisa dos headers
+      # do libmnl mesmo no target host — o runner Ubuntu não os traz por padrão.
+      - run: sudo apt-get update && sudo apt-get install -y libmnl-dev
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{ env.ELIXIR_VERSION }}
+          otp-version: ${{ env.OTP_VERSION }}
+      # Nerves declara `archives: [nerves_bootstrap: ...]` no mix.exs, então o
+      # mix exige o archive para rodar qualquer task (o setup-beam não o instala).
+      - run: mix archive.install hex nerves_bootstrap --force
+      - run: mix deps.get
+        working-directory: firmware
+      - run: mix check
+        working-directory: firmware
